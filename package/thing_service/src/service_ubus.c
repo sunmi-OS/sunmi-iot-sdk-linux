@@ -116,12 +116,14 @@ static int thing_service_get_service(struct ubus_context *ctx, struct ubus_objec
 enum {
 	ADD_SERVICE_ID = 0,
 	ADD_SERVICE_TYPE,
+	ADD_SERVICE_ADAPTER_ID,
 	__ADD_SERVICE_MAX,
 };
 
 static const struct blobmsg_policy _add_service_policy[] = {
 	[ADD_SERVICE_ID] = { .name = "service_id", .type = BLOBMSG_TYPE_STRING },
 	[ADD_SERVICE_TYPE] = { .name = "service_type", .type = BLOBMSG_TYPE_STRING },
+	[ADD_SERVICE_ADAPTER_ID] = { .name = "adapter_id", .type = BLOBMSG_TYPE_INT32 },
 };
 
 static int thing_service_add_service(struct ubus_context *ctx, struct ubus_object *obj,
@@ -129,6 +131,7 @@ static int thing_service_add_service(struct ubus_context *ctx, struct ubus_objec
 {
     char* service_id = NULL;
     char* service_type = NULL;
+    int adapter_id = 0;
 
 	struct blob_attr *tb[__ADD_SERVICE_MAX];
     memset(tb, 0, sizeof(struct blob_attr *) * __ADD_SERVICE_MAX);
@@ -147,7 +150,15 @@ static int thing_service_add_service(struct ubus_context *ctx, struct ubus_objec
         return UBUS_STATUS_INVALID_ARGUMENT;
     }
     service_type = blobmsg_get_string(tb[ADD_SERVICE_TYPE]);
-    if (service_register(service_id, service_type)) 
+
+    if (!tb[ADD_SERVICE_ADAPTER_ID]) 
+    {
+        SUNMI_LOG(PRINT_LEVEL_ERROR, "thing adapter id is invalid.");
+        return UBUS_STATUS_INVALID_ARGUMENT;
+    }
+    adapter_id = blobmsg_get_u32(tb[ADD_SERVICE_ADAPTER_ID]);
+
+    if (service_register(service_id, service_type, adapter_id)) 
     {
         return UBUS_STATUS_UNKNOWN_ERROR;
     }
@@ -160,8 +171,19 @@ static int thing_service_notice_mqtt_on_connect(struct ubus_context *ctx, struct
 {
     SUNMI_LOG(PRINT_LEVEL_INFO, "mqtt on connect");
     thing_service_subscribe_mqtt_topics();
+    service_notice_adapter_mqtt_connect();
 
-	return UBUS_STATUS_OK;
+    return UBUS_STATUS_OK;
+}
+
+/* mqtt通知当前连接断开 */
+static int thing_service_notice_mqtt_on_disconnect(struct ubus_context *ctx, struct ubus_object *obj,
+    struct ubus_request_data *req, const char *method, struct blob_attr *msg)
+{
+    SUNMI_LOG(PRINT_LEVEL_INFO, "mqtt on disconnect");
+    service_notice_adapter_mqtt_disconnect();
+
+    return UBUS_STATUS_OK;
 }
 
 enum {
@@ -179,7 +201,7 @@ static const struct blobmsg_policy _on_message_policy[] = {
 static int thing_service_notice_mqtt_on_message(struct ubus_context *ctx, struct ubus_object *obj,
     struct ubus_request_data *req, const char *method, struct blob_attr *msg)
 {
-    SUNMI_LOG(PRINT_LEVEL_INFO, "mqtt on message");
+    //SUNMI_LOG(PRINT_LEVEL_INFO, "mqtt on message");
 
     char* topic = NULL;
     char* payload = NULL;
@@ -202,9 +224,10 @@ static int thing_service_notice_mqtt_on_message(struct ubus_context *ctx, struct
     }
     payload = blobmsg_get_string(tb[ON_MESSAGE_PAYLOAD]);
 
-    SUNMI_LOG(PRINT_LEVEL_INFO, "recv topic=%s", topic);
-    SUNMI_LOG(PRINT_LEVEL_INFO, "recv payload=%s", payload);
+    //SUNMI_LOG(PRINT_LEVEL_INFO, "recv topic=%s", topic);
+    //SUNMI_LOG(PRINT_LEVEL_INFO, "recv payload=%s", payload);
 
+    service_send_ack(topic, payload);
     if(service_call(topic, payload) < 0)
     {
         return UBUS_STATUS_UNKNOWN_ERROR;
@@ -227,7 +250,7 @@ static const struct blobmsg_policy _send_message_policy[] = {
 static int thing_service_send_message(struct ubus_context *ctx, struct ubus_object *obj,
     struct ubus_request_data *req, const char *method, struct blob_attr *msg)
 {
-    SUNMI_LOG(PRINT_LEVEL_INFO, "service send message");
+    //SUNMI_LOG(PRINT_LEVEL_INFO, "service send message");
 
     char* topic = NULL;
     char* payload = NULL;
@@ -267,6 +290,7 @@ static const struct ubus_method thing_service_methods[] = {
     UBUS_METHOD_NOARG("get_service", thing_service_get_service),
     UBUS_METHOD("add_service", thing_service_add_service, _add_service_policy),
     UBUS_METHOD_NOARG("on_connect", thing_service_notice_mqtt_on_connect),
+    UBUS_METHOD_NOARG("on_disconnect", thing_service_notice_mqtt_on_disconnect),
     UBUS_METHOD("on_message", thing_service_notice_mqtt_on_message, _on_message_policy),
     UBUS_METHOD("send_message", thing_service_send_message, _send_message_policy),
 };

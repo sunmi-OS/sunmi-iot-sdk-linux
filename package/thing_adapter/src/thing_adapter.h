@@ -27,6 +27,8 @@ typedef struct _THING_ADAPTER{
     int (*execute_commands)(cJSON* request, cJSON* response);    /* 执行一组命令 */
     int (*get_property)(cJSON* request, cJSON* response);       /* 获取属性 */
     int (*set_property)(cJSON* request, cJSON* response);       /* 设置属性 */
+    int (*on_connect)();    /* 成功连接云服务器的回调 */
+    int (*on_disconnect)();    /* 断开云服务器的回调 */
 }THING_ADAPTER;
 
 /**
@@ -71,4 +73,15 @@ int thing_adapter_run();
  * \return 0:成功，-1:失败
  **/
 int thing_adapter_send_event(cJSON* event_data);
+
+/**
+ *\fn     thing_adapter_report_property
+ *\brief  thing_adapter属性上报
+ * 
+ * \param[in] property_data
+ *       上报信息的json数据结构，注意property_data的内存由调用者释放
+ * 
+ * \return 0:成功，-1:失败
+ **/
+int thing_adapter_report_property(cJSON* property_data);
 #endif

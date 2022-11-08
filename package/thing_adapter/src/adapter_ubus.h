@@ -3,7 +3,7 @@
 
 #include "link/common.h"
 
-int thing_adapter_ubus_init(char* service_id);
+int thing_adapter_ubus_init(int pid);
 int thing_adapter_ubus_cleanup();
 
 #endif

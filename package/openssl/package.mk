@@ -3,7 +3,7 @@ openssl_prep:
 	cp $(PACKAGE_DIR)/openssl/src/*  $(BUILD_DIR)/openssl/ -fr
 
 openssl_build: openssl_prep
-	( cd $(BUILD_DIR)/openssl/ && ./Configure $(OS))
+	( cd $(BUILD_DIR)/openssl/ && chmod +x Configure && ./Configure $(OS))
 	$(MAKE) -C $(BUILD_DIR)/openssl/ all
 
 openssl_install:

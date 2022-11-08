@@ -77,6 +77,20 @@ int demo_set_property(cJSON* request_data, cJSON* response_data)
     return 0;
 }
 
+/* 云连接成功回调 */
+int demo_on_connect()
+{
+    printf("demo on connect\n");
+    return 0;
+}
+
+/* 云连接断开回调 */
+int demo_on_disconnect()
+{
+    printf("demo on disconnect\n");
+    return 0;
+}
+
 void* demo_send_event_routine(void* arg)
 {
     cJSON* event_data = NULL;
@@ -106,6 +120,8 @@ static THING_ADAPTER demo_adapter =
     .execute_commands = demo_execute_commands, /* 多条命令处理 */
     .get_property = demo_get_property,   /* 获取属性 */
     .set_property = demo_set_property,   /* 设置属性 */
+    .on_connect = demo_on_connect,   /* 云连接成功回调 */
+    .on_disconnect = demo_on_disconnect,   /* 云连接断开回调 */
 };
 
 int main()

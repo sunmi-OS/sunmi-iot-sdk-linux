@@ -52,5 +52,5 @@ int mqtt_proc();
 int mqtt_subscribe(char* topic);
 int mqtt_get_status(int* status);
 int mqtt_publish(char* topic, char* payload, int qos);
-
+int mqtt_reconnect();
 #endif

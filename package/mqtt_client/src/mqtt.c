@@ -38,6 +38,23 @@ out:
     return ret;
 }
 
+int notify_disconnect()
+{
+    int ret = 0;
+    struct blob_buf req = {};
+    blob_buf_init(&req, 0);
+    if (ubus_call("thing_service", "on_disconnect", &req, NULL, 3000) < 0) 
+    {
+        SUNMI_LOG(PRINT_LEVEL_ERROR,"ubus_call thing_service on_disconnect failed.");
+        ret = -1;
+        goto out;
+    }
+
+out:
+    blob_buf_free(&req);
+    return ret;
+}
+
 int notify_message(char* topic, char* payload)
 {
     int ret = 0;
@@ -48,7 +65,7 @@ int notify_message(char* topic, char* payload)
 
     if (ubus_call_async("thing_service", "on_message", &req, NULL, NULL) < 0) 
     {
-        SUNMI_LOG(PRINT_LEVEL_ERROR,"ubus_call thing_service on_connect failed.");
+        SUNMI_LOG(PRINT_LEVEL_ERROR,"ubus_call thing_service on_message failed.");
         ret = -1;
         goto out;
     }
@@ -75,7 +92,8 @@ void on_connect(struct mosquitto *mosq, void *obj, int reason_code)
 		mosquitto_disconnect(mosq);
         run = 0;
         mqtt_status = MQTT_STATUS_DISCONNECTED;
-        SUNMI_LOG(PRINT_LEVEL_INFO, "mqtt on_connect: disconnected");
+        SUNMI_LOG(PRINT_LEVEL_INFO, "mqtt on_connect: %s", mosquitto_connack_string(reason_code));
+		return;
 	}
 
 	mqtt_status = MQTT_STATUS_CONNECTED;
@@ -100,6 +118,7 @@ void on_disconnect(struct mosquitto *mosq, void *obj, int rc)
 {
 	mqtt_status = MQTT_STATUS_DISCONNECTED;
 	SUNMI_LOG(PRINT_LEVEL_INFO, "mqtt on_connect: disconnected");
+    notify_disconnect();
 }
 
 /* Callback called when the broker sends a SUBACK in response to a SUBSCRIBE. */
@@ -133,7 +152,7 @@ void on_subscribe(struct mosquitto *mosq, void *obj, int mid, int qos_count, con
 void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *msg)
 {
 	/* This blindly prints the payload, but the payload can be anything so take care. */
-	SUNMI_LOG(PRINT_LEVEL_INFO, "%s %d %s", msg->topic, msg->qos, (char *)msg->payload);
+	//SUNMI_LOG(PRINT_LEVEL_INFO, "%s %d %s", msg->topic, msg->qos, (char *)msg->payload);
     notify_message(msg->topic, msg->payload);
 }
 
@@ -451,5 +470,16 @@ int mqtt_publish(char* topic, char* payload, int qos)
         }
 	}
 
+    return 0;
+}
+
+int mqtt_reconnect()
+{
+    if (mqtt_status = MQTT_STATUS_CONNECTED) 
+    {
+        mosquitto_disconnect(mosq);
+        run = 0;
+        mqtt_status = MQTT_STATUS_DISCONNECTED;
+    }
     return 0;
 }

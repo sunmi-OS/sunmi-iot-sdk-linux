@@ -216,11 +216,18 @@ static int mqtt_client_publish(struct ubus_context *ctx, struct ubus_object *obj
 
     if (mqtt_publish(topic, payload, qos) < 0) 
     {
-        SUNMI_LOG(PRINT_LEVEL_ERROR, "mqtt_subscribe failed.");
+        SUNMI_LOG(PRINT_LEVEL_ERROR, "mqtt_publish failed.");
         return UBUS_STATUS_UNKNOWN_ERROR;
     }
 
     return UBUS_STATUS_OK;
+}
+
+static int mqtt_client_reconnect(struct ubus_context *ctx, struct ubus_object *obj,
+    struct ubus_request_data *req, const char *method, struct blob_attr *msg)
+{
+    mqtt_reconnect();
+	return UBUS_STATUS_OK;
 }
 
 static const struct ubus_method mqtt_client_methods[] = {
@@ -229,6 +236,7 @@ static const struct ubus_method mqtt_client_methods[] = {
     UBUS_METHOD("set_config", mqtt_client_set_config, _set_config_policy),
     UBUS_METHOD("subscribe", mqtt_client_subscribe, _subscribe_policy),
     UBUS_METHOD("publish", mqtt_client_publish, _publish_policy),
+    UBUS_METHOD_NOARG("reconnect", mqtt_client_reconnect),
 };
 
 static struct ubus_object_type mqtt_client_object_type =
