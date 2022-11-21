@@ -233,7 +233,9 @@ static void* mosquitto_routine(void* arg)
 	int count = 0;
 	unsigned int reconnects = 0;
 	unsigned long reconnect_delay = 0;
-        
+	char will_topic[128] = {0};
+	char will_payload[128] = {0};
+            
     while (1) 
     {
         /* 没有配置mqtt信息 */
@@ -288,6 +290,11 @@ static void* mosquitto_routine(void* arg)
         /* 不校验证书 */
         mosquitto_tls_opts_set(mosq,0,NULL,NULL);
         mosquitto_tls_insecure_set(mosq, true);
+
+        /* 配置遗嘱消息 */
+        snprintf(will_topic, 128, "smlink/%s/sys/status", mqtt_config.client_id);
+        snprintf(will_payload, 128, "deviceid_connercttime+\"@offline");
+        mosquitto_will_set(mosq, will_topic, strlen(will_payload), will_payload, 1, true);
 
     	/* Connect to test.mosquitto.org on port 1883, with a keepalive of 60 seconds.
     	 * This call makes the socket connection only, it does not complete the MQTT
