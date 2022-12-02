@@ -11,6 +11,10 @@ int main(int argc, char *argv[])
 {
     mqtt_proc();
 
+
+    /* uloop初始化 */
+    uloop_init();
+
     /* ubus初始化 */
     if(mqtt_ubus_init() < 0)
     {
@@ -18,8 +22,6 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    /* uloop初始化 */
-    uloop_init();
     uloop_run();
     uloop_done();
 

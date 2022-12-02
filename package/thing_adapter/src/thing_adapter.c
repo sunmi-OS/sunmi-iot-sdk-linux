@@ -295,6 +295,9 @@ static void _connect_thing_service_timer_init()
 
 int thing_adapter_run()
 {
+    /* uloop初始化 */
+    uloop_init();
+
     /* ubus初始化 */
     if (thing_adapter_ubus_init(adapters.pid) < 0) 
     {
@@ -305,8 +308,6 @@ int thing_adapter_run()
     /* 延迟发起连接mqtt */
     _connect_thing_service_timer_init();
 
-    /* uloop初始化 */
-    uloop_init();
     uloop_run();
     uloop_done();
 

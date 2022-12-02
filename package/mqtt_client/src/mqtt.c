@@ -482,7 +482,7 @@ int mqtt_publish(char* topic, char* payload, int qos)
 
 int mqtt_reconnect()
 {
-    if (mqtt_status = MQTT_STATUS_CONNECTED) 
+    if (MQTT_STATUS_CONNECTED == mqtt_status) 
     {
         mosquitto_disconnect(mosq);
         run = 0;

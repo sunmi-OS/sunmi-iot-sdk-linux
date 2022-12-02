@@ -45,6 +45,7 @@ int demo_execute_command(cJSON* request_data, cJSON* response_data)
     printf("execute command = %s.\n", command->valuestring);
 
     /* 填充response_data */
+    cJSON_AddStringToObject(response_data, "service_id", "demo_service_id");
     cJSON_AddNumberToObject(response_data, "code", 1000);
     cJSON_AddStringToObject(response_data, "msg", "ok");
 

@@ -9,6 +9,9 @@ int main()
 {
     service_init();
 
+    /* uloop初始化 */
+    uloop_init();
+
     /* ubus初始化 */
     if (thing_service_ubus_init() < 0) 
     {
@@ -16,8 +19,6 @@ int main()
         return -1;
     }
 
-    /* uloop初始化 */
-    uloop_init();
     uloop_run();
     uloop_done();
 
