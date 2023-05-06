@@ -3,6 +3,11 @@
 #include "device.h"
 #include "service.h"
 
+#define SYS_MESSAGE_TOPIC "/sys/message/"
+#define SYS_MESSAGE_OTA "ota"
+#define UBUS_OBJ_OTA "ota"
+
+
 /* 读取device信息 */
 static int thing_service_get_device(struct ubus_context *ctx, struct ubus_object *obj,
     struct ubus_request_data *req, const char *method, struct blob_attr *msg)
@@ -197,6 +202,64 @@ static const struct blobmsg_policy _on_message_policy[] = {
 	[ON_MESSAGE_PAYLOAD] = { .name = "payload", .type = BLOBMSG_TYPE_STRING },
 };
 
+int _dispatch_sys_message(char *topic, char *payload)
+{
+    cJSON *request_msg = NULL;   /* 请求报文 */
+    cJSON *request_data = NULL;  /* 请求参数 */
+    cJSON *action = NULL;   /* action */
+    struct blob_buf req = { };
+    int ret = 0;
+
+    /* 解析payload */
+    request_msg = cJSON_Parse(payload);
+    if (!request_msg)
+    {
+        SUNMI_LOG(PRINT_LEVEL_ERROR, "cJSON_Parse message failed.");
+        ret = -1;
+        goto out;
+    }
+
+    /* 获取data字段 */
+    request_data = cJSON_GetObjectItem(request_msg, "data");
+    if (!request_data)
+    {
+        SUNMI_LOG(PRINT_LEVEL_ERROR, "request_data is NULL.");
+        ret = -1;
+        goto out;
+    }
+
+    action = cJSON_GetObjectItem(request_data, "action");
+    if (!action || !action->valuestring)
+    {
+        SUNMI_LOG(PRINT_LEVEL_ERROR, "action is NULL.");
+        ret = -1;
+        goto out;
+    }
+
+    if (!strcmp(action->valuestring, SYS_MESSAGE_OTA))
+    {
+        blob_buf_init(&req, 0);
+        blobmsg_add_string(&req, "topic", topic);
+        blobmsg_add_string(&req, "payload", payload);
+
+        if (ubus_call_async(UBUS_OBJ_OTA, "handle_message", &req, NULL, NULL) < 0)
+        {
+            SUNMI_LOG(PRINT_LEVEL_ERROR, "ubus_call OTA handle_message failed.");
+            ret = -1;
+            goto out;
+        }
+    }
+
+out:
+    if (request_msg)
+    {
+        cJSON_Delete(request_msg);
+    }
+    blob_buf_free(&req);
+
+    return ret;
+}
+
 /* mqtt收到消息报文 */
 static int thing_service_notice_mqtt_on_message(struct ubus_context *ctx, struct ubus_object *obj,
     struct ubus_request_data *req, const char *method, struct blob_attr *msg)
@@ -228,9 +291,21 @@ static int thing_service_notice_mqtt_on_message(struct ubus_context *ctx, struct
     //SUNMI_LOG(PRINT_LEVEL_INFO, "recv payload=%s", payload);
 
     service_send_ack(topic, payload);
-    if(service_call(topic, payload) < 0)
+
+    // 系统消息在此分发
+    if (strstr(topic, SYS_MESSAGE_TOPIC))
     {
-        return UBUS_STATUS_UNKNOWN_ERROR;
+        if (_dispatch_sys_message(topic, payload) < 0)
+        {
+            return UBUS_STATUS_UNKNOWN_ERROR;
+        }
+    }
+    else
+    {
+        if (service_call(topic, payload) < 0)
+        {
+            return UBUS_STATUS_UNKNOWN_ERROR;
+        }
     }
 
 	return UBUS_STATUS_OK;

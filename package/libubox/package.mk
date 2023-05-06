@@ -7,15 +7,11 @@ libubox_build: libubox_prep
 	$(MAKE) -C $(BUILD_DIR)/libubox/
 
 libubox_install:
-	install $(BUILD_DIR)/libubox/libblobmsg_json.a  $(STAGING_DIR)/lib
-	install $(BUILD_DIR)/libubox/libubox.a  $(STAGING_DIR)/lib
-	install $(BUILD_DIR)/libubox/lib*.so  $(STAGING_DIR)/lib
+	cp -a $(BUILD_DIR)/libubox/lib*.so  $(STAGING_DIR)/lib
+	cp -a $(BUILD_DIR)/libubox/lib*.so  $(OUTPUT_DIR)/lib
 
 	install -d $(STAGING_DIR)/include/libubox
 	install $(BUILD_DIR)/libubox/*.h $(STAGING_DIR)/include/libubox
-
-	install $(BUILD_DIR)/libubox/libubox.so  $(OUTPUT_DIR)/lib
-	install $(BUILD_DIR)/libubox/libblobmsg_json.so  $(OUTPUT_DIR)/lib
 
 libubox_clean:
 	rm -fr $(BUILD_DIR)/libubox/

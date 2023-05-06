@@ -293,7 +293,7 @@ static void* mosquitto_routine(void* arg)
 
         /* 配置遗嘱消息 */
         snprintf(will_topic, 128, "smlink/%s/sys/status", mqtt_config.client_id);
-        snprintf(will_payload, 128, "deviceid_connercttime+\"@offline");
+        snprintf(will_payload, 128, "%s_%lld@offline", mqtt_config.client_id, (long long)time(NULL) * 1000);
         mosquitto_will_set(mosq, will_topic, strlen(will_payload), will_payload, 1, true);
 
     	/* Connect to test.mosquitto.org on port 1883, with a keepalive of 60 seconds.

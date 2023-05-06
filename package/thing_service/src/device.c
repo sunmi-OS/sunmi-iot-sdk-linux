@@ -222,5 +222,8 @@ int thing_service_subscribe_mqtt_topics()
     snprintf(topic, 128, "smlink/%s/thing/property/get",device_config.device_id);
     _subscribe_one_topic(topic);
 
+    snprintf(topic, 128, "smlink/%s/sys/message/send", device_config.device_id);
+    _subscribe_one_topic(topic);
+
     return 0;
 }

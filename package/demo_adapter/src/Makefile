@@ -1,3 +1,3 @@
 demo_adapter: demo_adapter.o
-	$(CC) -o $@ $^ $(LDFLAGS) -lrt -ldl -lpthread -ljson-c -lblobmsg_json -lubox -lubus -llink -lcjson -ladapter -lcjson
+	$(CC) -o $@ $^ $(LDFLAGS) -lrt  -lpthread -ladapter -llink -lblobmsg_json -ljson-c -lubox -lubus -lcjson -lcjson -ldl
 

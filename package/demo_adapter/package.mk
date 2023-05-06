@@ -1,6 +1,6 @@
 demo_adapter_prep:
 	install -d $(BUILD_DIR)/demo_adapter
-	cp $(PACKAGE_DIR)/demo_adapter/src/*  $(BUILD_DIR)/demo_adapter/ -fr
+	rsync -a $(PACKAGE_DIR)/demo_adapter/src/*  $(BUILD_DIR)/demo_adapter/
 
 demo_adapter_build: demo_adapter_prep
 	$(MAKE) -C $(BUILD_DIR)/demo_adapter

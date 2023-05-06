@@ -32,7 +32,7 @@ export LDFLAGS=-L$(STAGING_DIR)/lib -lrt
 all:
 
 #编译目标
-PACKAGE := cJSON openssl mosquitto json-c libubox ubus liblink mqtt_client thing_service thing_adapter demo_adapter
+PACKAGE := cJSON openssl json-c libubox ubus liblink  mosquitto thing_adapter ota_sdk libcurl mqtt_client thing_service demo_adapter ota_demo 
 include $(PACKAGE_DIR)/*/package.mk
 
 $(PACKAGE):%:%_prep %_build %_install

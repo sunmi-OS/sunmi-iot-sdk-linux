@@ -363,6 +363,8 @@ int thing_adapter_call(char* topic, char* payload)
     cJSON* version = NULL;
     cJSON* service_id = NULL;   /* service id */
     cJSON* params = NULL;
+    cJSON *sys = NULL;          /* sys参数 */
+    cJSON *reply = NULL;        /* reply标志位 */
 
     char response_topic[128];
     char* response_payload = NULL;
@@ -500,7 +502,15 @@ int thing_adapter_call(char* topic, char* payload)
     {
         SUNMI_LOG(PRINT_LEVEL_ERROR, "unknown adapter call type %d.",call_type);
     }
-    
+
+    /* 获取reply参数 */
+    reply = cJSON_GetObjectItem(sys, "reply");
+    if (!reply || (1 != reply->valueint))
+    {
+        ret = 0;
+        goto out;
+    }
+
     /* 构造返回数据 */
     response_msg = cJSON_CreateObject();
     if (!response_msg)

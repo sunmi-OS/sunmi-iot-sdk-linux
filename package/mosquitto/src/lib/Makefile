@@ -94,6 +94,7 @@ clean :
 
 libmosquitto.so.${SOVERSION} : ${MOSQ_OBJS}
 	${CROSS_COMPILE}$(CC) -shared $(LIB_LDFLAGS) $^ -o $@ ${LIB_LIBADD}
+	ln -sf libmosquitto.so.${SOVERSION} libmosquitto.so
 
 libmosquitto.a : ${MOSQ_OBJS}
 	${CROSS_COMPILE}$(AR) cr $@ $^

@@ -319,10 +319,9 @@ int service_send_ack(char* topic, char* payload)
 
     /* 获取reply参数 */
     reply = cJSON_GetObjectItem(sys, "reply");
-    if (!reply || (1 != reply->valueint))
+    if (!reply)
     {
-        /* 不需要应答 */
-        ret = 0;
+        ret = -1;
         goto out;
     }
 
@@ -526,6 +525,42 @@ out:
     return ret;
 }
 
+static int _notify_ota_mqtt_connect(void)
+{
+    struct blob_buf req = { };
+    int ret = 0;
+
+    blob_buf_init(&req, 0);
+
+    if (ubus_call_async("ota", "handle_connect", &req, NULL, NULL) < 0)
+    {
+        SUNMI_LOG(PRINT_LEVEL_ERROR, "ubus_call thing adapter handle_connect failed.");
+        ret = -1;
+    }
+
+    blob_buf_free(&req);
+    return ret;
+}
+
+static int _notify_ota_mqtt_disconnect(void)
+{
+    struct blob_buf req = { };
+    int ret = 0;
+
+    blob_buf_init(&req, 0);
+
+    if (ubus_call_async("ota", "handle_disconnect", &req, NULL, NULL) < 0)
+    {
+        SUNMI_LOG(PRINT_LEVEL_ERROR, "ubus_call thing adapter handle_connect failed.");
+        ret = -1;
+    }
+
+    blob_buf_free(&req);
+    return ret;
+}
+
+
+
 int service_notice_adapter_mqtt_connect()
 {
     SERVICE *service= NULL;
@@ -541,6 +576,8 @@ int service_notice_adapter_mqtt_connect()
         /* 执行回调操作 */
         _notice_one_service_mqtt_connect(service);
     }
+
+    _notify_ota_mqtt_connect();
 
     return 0;
 }
@@ -590,6 +627,8 @@ int service_notice_adapter_mqtt_disconnect()
         /* 执行回调操作 */
         _notice_one_service_mqtt_disconnect(service);
     }
+
+    _notify_ota_mqtt_disconnect();
 
     return 0;
 }

@@ -1,12 +1,13 @@
 mosquitto_prep:
 	install -d $(BUILD_DIR)/mosquitto
-	cp $(PACKAGE_DIR)/mosquitto/src/*  $(BUILD_DIR)/mosquitto/ -fr
+	rsync -a $(PACKAGE_DIR)/mosquitto/src/*  $(BUILD_DIR)/mosquitto/ 
 
 mosquitto_build: mosquitto_prep
-	$(MAKE) -C $(BUILD_DIR)/mosquitto/ WITH_STATIC_LIBRARIES=yes WITH_SHARED_LIBRARIES=no WITH_TLS=yes WITH_THREADING=yes WITH_SRV=no WITH_DOCS=no
+	$(MAKE) -C $(BUILD_DIR)/mosquitto/ WITH_STATIC_LIBRARIES=no WITH_SHARED_LIBRARIES=yes WITH_TLS=yes WITH_THREADING=yes WITH_SRV=no WITH_DOCS=no
 
 mosquitto_install:
-	install $(BUILD_DIR)/mosquitto/lib/libmosquitto.a  $(STAGING_DIR)/lib
+	cp -a $(BUILD_DIR)/mosquitto/lib/libmosquitto.so* $(OUTPUT_DIR)/lib
+	cp -a $(BUILD_DIR)/mosquitto/lib/libmosquitto.so* $(STAGING_DIR)/lib
 	install $(BUILD_DIR)/mosquitto/include/*.h $(STAGING_DIR)/include
 
 mosquitto_clean:
