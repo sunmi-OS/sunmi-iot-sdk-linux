@@ -6,3 +6,6 @@ CROSS_COMPILE_PRIFIX := mips-linux-gnu-
 
 #OS
 OS := linux-generic32
+
+#交叉编译中，程序运行平台
+HOST := mips-linux-gnu

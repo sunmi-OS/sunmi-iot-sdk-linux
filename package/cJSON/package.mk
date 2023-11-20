@@ -8,8 +8,8 @@ cJSON_build: cJSON_prep
 cJSON_install:
 	cp -a $(BUILD_DIR)/cJSON/libcjson.so* $(OUTPUT_DIR)/lib
 	cp -a $(BUILD_DIR)/cJSON/libcjson.so* $(STAGING_DIR)/lib
-	install -d $(STAGING_DIR)/include/
-	install $(BUILD_DIR)/cJSON/cJSON.h $(STAGING_DIR)/include/
+	install -d $(STAGING_DIR)/include/cjson
+	install $(BUILD_DIR)/cJSON/cJSON.h $(STAGING_DIR)/include/cjson
 
 cJSON_clean:
 	rm -fr $(BUILD_DIR)/cJSON/
